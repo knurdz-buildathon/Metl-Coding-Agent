@@ -28,7 +28,7 @@ dependencies = [
 
 [project.optional-dependencies]
 v0 = ["v0-sdk>=0.1.0"]
-dev = [
+test = [
     "pytest>=8.0.0",
     "pytest-asyncio>=0.25.0",
     "pytest-cov>=6.0.0",
