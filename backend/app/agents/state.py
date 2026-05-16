@@ -3,14 +3,6 @@ from pathlib import Path
 from app.models import Task, TaskStatus, Plan, Resource
 
 
-def get_task(state: AgentState) -> Task:
-    """Return a Task model instance from state, rehydrating if langgraph replaced it with a dict."""
-    task = state["task"]
-    if isinstance(task, Task):
-        return task
-    return Task(**task)
-
-
 class AgentState(TypedDict):
     """LangGraph state for the coding agent."""
     task: Union[Task, dict[str, Any]]
@@ -23,3 +15,11 @@ class AgentState(TypedDict):
     pr_url: Optional[str]
     preview_url: Optional[str]
     report: Optional[dict[str, Any]]
+
+
+def get_task(state: AgentState) -> Task:
+    """Return a Task model instance from state, rehydrating if langgraph replaced it with a dict."""
+    task = state["task"]
+    if isinstance(task, Task):
+        return task
+    return Task(**task)
