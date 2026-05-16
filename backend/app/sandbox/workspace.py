@@ -1,3 +1,4 @@
+import asyncio
 import os
 import shutil
 import tempfile
@@ -21,15 +22,20 @@ class Workspace:
     async def clone(self) -> Path:
         """Clone the repo and create a feature branch."""
         self.work_dir.mkdir(parents=True, exist_ok=True)
+        print(f"[Workspace] cloning {self.github_url} into {self.work_dir}")
 
         auth_url = self._authenticated_url()
-        self.repo = Repo.clone_from(auth_url, str(self.work_dir))
+        if not auth_url:
+            raise ValueError("github_url is empty — task state was corrupted")
+
+        loop = asyncio.get_running_loop()
+        self.repo = await loop.run_in_executor(None, Repo.clone_from, auth_url, str(self.work_dir))
 
         # Create feature branch from target branch
         if self.branch != "main":
-            self.repo.git.checkout(self.branch)
+            await loop.run_in_executor(None, self.repo.git.checkout, self.branch)
 
-        self.repo.git.checkout("-b", self.branch_name)
+        await loop.run_in_executor(None, self.repo.git.checkout, "-b", self.branch_name)
         return self.work_dir
 
     async def commit(self, message: str) -> str:
