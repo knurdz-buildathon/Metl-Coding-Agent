@@ -1,6 +1,6 @@
 import json
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from app.config import settings
@@ -50,20 +50,20 @@ class TaskStore:
         for key, value in kwargs.items():
             if hasattr(task, key):
                 setattr(task, key, value)
-        task.updated_at = datetime.utcnow()
+        task.updated_at = datetime.now(timezone.utc)
         return task
 
     async def add_log(self, task_id: str, entry: dict) -> None:
         task = self._tasks.get(task_id)
         if task:
             task.log.append(entry)
-            task.updated_at = datetime.utcnow()
+            task.updated_at = datetime.now(timezone.utc)
 
     async def add_error(self, task_id: str, error: str) -> None:
         task = self._tasks.get(task_id)
         if task:
             task.errors.append(error)
-            task.updated_at = datetime.utcnow()
+            task.updated_at = datetime.now(timezone.utc)
 
     async def list_tasks(self, limit: int = 50, offset: int = 0) -> list[Task]:
         tasks = sorted(

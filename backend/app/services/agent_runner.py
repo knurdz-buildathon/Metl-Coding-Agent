@@ -1,7 +1,7 @@
 import asyncio
 import logging
 import traceback
-from datetime import datetime
+from datetime import datetime, timezone
 
 from app.agents.graph import agent_graph
 from app.agents.state import AgentState
@@ -9,7 +9,6 @@ from app.services.task_store import TaskStore
 from app.services.event_bus import EventBus
 
 logger = logging.getLogger("metl.agent")
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
 
 class AgentRunner:
@@ -93,7 +92,7 @@ class AgentRunner:
 
     async def _log(self, task_id: str, message: str):
         logger.info(message)
-        entry = {"type": "log", "message": message, "timestamp": datetime.utcnow().isoformat()}
+        entry = {"type": "log", "message": message, "timestamp": datetime.now(timezone.utc).isoformat()}
         await self.task_store.add_log(task_id, entry)
         try:
             await self.event_bus.publish(
