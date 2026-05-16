@@ -7,12 +7,6 @@ from app.agents.prompts import PLANNER_SYSTEM_PROMPT
 
 async def analyze_plan_node(state: AgentState) -> dict:
     """Analyze the prompt + plan_file and create an enhanced implementation plan."""
-    import json, time  # #region agent log
-    _dl_msg = json.dumps({"sessionId":"a493e7","id":"log_"+str(int(time.time()*1000)),"timestamp":int(time.time()*1000),"location":"planner.py:12","message":"H1/H2: planner entry","data":{"task_id":get_task(state).id,"github_url":get_task(state).github_url,"has_plan_file":bool(get_task(state).plan.original_plan_file)},"runId":"debug","hypothesisId":"H1"})
-    print("[METL_DEBUG] " + _dl_msg)
-    try:
-        with open("/tmp/metl-debug-a493e7.log","a") as _dl_f: _dl_f.write(_dl_msg + "\n")
-    except Exception: pass  # #endregion
     llm = get_llm_service()
     task = get_task(state)
 

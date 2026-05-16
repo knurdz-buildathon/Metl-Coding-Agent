@@ -10,18 +10,8 @@ from app.agents.prompts import CODER_SYSTEM_PROMPT
 
 async def execute_coding_step(state: AgentState) -> dict:
     """Execute the current step in the plan using Aider."""
-    import json, time  # #region agent log
-    _dl_path = "/tmp/metl-debug-a493e7.log"
-    def _dl(msg, data, hid="H1"):
-        _dl_obj = json.dumps({"sessionId":"a493e7","id":"log_"+str(int(time.time()*1000)),"timestamp":int(time.time()*1000),"location":"coder.py:12","message":msg,"data":data,"runId":"debug","hypothesisId":hid})
-        print("[METL_DEBUG] " + _dl_obj)
-        try:
-            with open(_dl_path,"a") as f: f.write(_dl_obj+"\n")
-        except Exception: pass
     task = get_task(state)
-    _dl("H1/H3: coder entry", {"task_id":task.id,"workspace_path":state.get("workspace_path"),"current_step":state.get("current_step",0)}, "H1")
     workspace = Path(state["workspace_path"])
-    _dl("H1: workspace path resolved", {"exists":workspace.exists(),"is_dir":workspace.is_dir() if workspace.exists() else None}, "H1")
     aidertool = AiderTool(workspace)
     fstool = FsTool(workspace)
 

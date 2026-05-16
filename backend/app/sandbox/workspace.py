@@ -22,51 +22,24 @@ class Workspace:
 
     async def clone(self) -> Path:
         """Clone the repo and create a feature branch."""
-        import json, time, traceback  # #region agent log
-        _dl_path = "/tmp/metl-debug-a493e7.log"
-        def _dl(msg, data, hid="H2"):
-            _dl_obj = json.dumps({"sessionId":"a493e7","id":"log_"+str(int(time.time()*1000)),"timestamp":int(time.time()*1000),"location":"workspace.py:24","message":msg,"data":data,"runId":"debug","hypothesisId":hid})
-            print("[METL_DEBUG] " + _dl_obj)
-            try:
-                with open(_dl_path,"a") as f: f.write(_dl_obj+"\n")
-            except Exception: pass
-        _dl("H2: clone() start", {"work_dir":str(self.work_dir),"github_url":self.github_url,"branch":self.branch}, "H2")
         self.work_dir.mkdir(parents=True, exist_ok=True)
-        _dl("H2: work_dir ensured", {"exists":self.work_dir.exists()}, "H2")
         print(f"[Workspace] cloning {self.github_url} into {self.work_dir}")
 
         auth_url = self._authenticated_url()
-        _dl("H2: auth_url ready", {"has_pat":bool(settings.github_pat),"auth_url_len":len(auth_url) if auth_url else 0}, "H2")
         if not auth_url:
             raise ValueError("github_url is empty — task state was corrupted")
 
         loop = asyncio.get_running_loop()
-        _dl("H2: about to Repo.clone_from", {"auth_url_target":self.github_url,"dest":str(self.work_dir)}, "H2")
-        try:
-            self.repo = await loop.run_in_executor(None, Repo.clone_from, auth_url, str(self.work_dir))
-        except Exception as e:
-            _dl("H2: Repo.clone_from failed", {"error":str(e),"tb":traceback.format_exc()[-500:]}, "H2")
-            raise
-        _dl("H2: clone_from success", {"repo_path":str(self.repo.working_dir) if self.repo else None}, "H2")
+        self.repo = await loop.run_in_executor(None, Repo.clone_from, auth_url, str(self.work_dir))
 
         # Create feature branch from target branch
         if self.branch != "main":
-            try:
-                await loop.run_in_executor(None, self.repo.git.checkout, self.branch)
-                _dl("H2: checked out target branch", {"branch":self.branch}, "H2")
-            except Exception as e:
-                _dl("H2: checkout target branch failed", {"error":str(e)}, "H2")
-                raise
+            await loop.run_in_executor(None, self.repo.git.checkout, self.branch)
 
-        try:
-            # Record the base commit for reliable diff later (origin/main may not exist after re-open)
-            self._base_commit = self.repo.head.commit.hexsha
-            await loop.run_in_executor(None, self.repo.git.checkout, "-b", self.branch_name)
-            _dl("H2: created feature branch", {"branch_name":self.branch_name,"base_commit":self._base_commit}, "H2")
-        except Exception as e:
-            _dl("H2: feature branch creation failed", {"error":str(e)}, "H2")
-            raise
-        return self.work_dir  # #endregion
+        # Record the base commit for reliable diff later (origin/main may not exist after re-open)
+        self._base_commit = self.repo.head.commit.hexsha
+        await loop.run_in_executor(None, self.repo.git.checkout, "-b", self.branch_name)
+        return self.work_dir
 
     async def commit(self, message: str) -> str:
         """Stage all changes and commit. Returns commit hash."""

@@ -89,15 +89,6 @@ class AgentRunner:
             await self.task_store.add_error(task_id, f"{error_msg}\n{stack}")
             await self.task_store.update(task_id, status="failed")
             await self._log(task_id, f"CRITICAL ERROR: {error_msg}")
-            # #region agent log
-            import json, time
-            _dl_obj = json.dumps({"sessionId":"a493e7","id":"log_"+str(int(time.time()*1000)),"timestamp":int(time.time()*1000),"location":"agent_runner.py:90","message":"CRITICAL ERROR captured","data":{"error_msg":error_msg,"stack":stack[-1000:]},"runId":"debug","hypothesisId":"H0"})
-            print("[METL_DEBUG] " + _dl_obj)
-            try:
-                with open("/tmp/metl-debug-a493e7.log","a") as f:
-                    f.write(_dl_obj+"\n")
-            except Exception: pass
-            # #endregion
 
     async def _log(self, task_id: str, message: str):
         logger.info(message)
