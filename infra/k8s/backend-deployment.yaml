@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: metl-backend
+  namespace: metl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: metl-backend
+  template:
+    metadata:
+      labels:
+        app: metl-backend
+    spec:
+      serviceAccountName: metl-agent
+      containers:
+        - name: backend
+          image: metl-backend:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+          env:
+            - name: REDIS_URL
+              value: "redis://metl-redis:6379"
+            - name: LLM_PROVIDER
+              valueFrom:
+                configMapKeyRef:
+                  name: metl-config
+                  key: llm_provider
+            - name: LLM_MODEL
+              valueFrom:
+                configMapKeyRef:
+                  name: metl-config
+                  key: llm_model
+          envFrom:
+            - secretRef:
+                name: metl-secrets
+          volumeMounts:
+            - name: docker-socket
+              mountPath: /var/run/docker.sock
+            - name: workspaces
+              mountPath: /tmp/metl-workspaces
+          resources:
+            requests:
+              cpu: "1"
+              memory: "2Gi"
+            limits:
+              cpu: "4"
+              memory: "8Gi"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 15
+      volumes:
+        - name: docker-socket
+          hostPath:
+            path: /var/run/docker.sock
+        - name: workspaces
+          hostPath:
+            path: /data/metl-workspaces
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: metl-backend
+  namespace: metl
+spec:
+  selector:
+    app: metl-backend
+  ports:
+    - port: 8000
+      targetPort: 8000

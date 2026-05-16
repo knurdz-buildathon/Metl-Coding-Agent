@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: metl-secrets
+  namespace: metl
+type: Opaque
+stringData:
+  openai_api_key: ""
+  openai_api_base: ""
+  openai_api_version: ""
+  anthropic_api_key: ""
+  github_pat: ""
+  cursor_api_key: ""
+  v0_api_key: ""
+  api_key: ""
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: metl-config
+  namespace: metl
+data:
+  llm_provider: "openai"
+  llm_model: "gpt-4.1"
+  aider_llm_provider: "openai"
+  aider_llm_model: "gpt-4.1"
+  agent_max_steps: "500"
+  enable_cursor_sdk: "false"
+  enable_v0: "false"
+  preview_base_url: "http://metl-backend:8000"
+  sandbox_base_dir: "/tmp/metl-workspaces"

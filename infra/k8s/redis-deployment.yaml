@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: metl-redis
+  namespace: metl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: metl-redis
+  template:
+    metadata:
+      labels:
+        app: metl-redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          ports:
+            - containerPort: 6379
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+      volumes:
+        - name: redis-data
+          persistentVolumeClaim:
+            claimName: metl-redis-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: metl-redis
+  namespace: metl
+spec:
+  selector:
+    app: metl-redis
+  ports:
+    - port: 6379
+      targetPort: 6379
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: metl-redis-pvc
+  namespace: metl
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi

@@ -1,0 +1,55 @@
+name: Deploy Metl
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - "frontend/**"
+
+jobs:
+  build-and-deploy:
+    runs-on: self-hosted
+    environment: metl-vps
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push backend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          push: true
+          tags: ghcr.io/${{ github.repository }}/metl-backend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          push: true
+          tags: ghcr.io/${{ github.repository }}/metl-frontend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Deploy to K3s
+        run: |
+          kubectl set image deployment/metl-backend \
+            -n metl \
+            backend=ghcr.io/${{ github.repository }}/metl-backend:latest
+          kubectl set image deployment/metl-frontend \
+            -n metl \
+            frontend=ghcr.io/${{ github.repository }}/metl-frontend:latest
+          kubectl -n metl rollout status deployment/metl-backend --timeout=300s
+          kubectl -n metl rollout status deployment/metl-frontend --timeout=300s

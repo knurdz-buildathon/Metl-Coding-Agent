@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: metl-frontend
+  namespace: metl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: metl-frontend
+  template:
+    metadata:
+      labels:
+        app: metl-frontend
+    spec:
+      containers:
+        - name: frontend
+          image: metl-frontend:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+          env:
+            - name: NEXT_PUBLIC_API_URL
+              value: "https://metl.yourdomain.com/api/v1"
+            - name: NEXT_PUBLIC_WS_URL
+              value: "wss://metl.yourdomain.com/ws"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: metl-frontend
+  namespace: metl
+spec:
+  selector:
+    app: metl-frontend
+  ports:
+    - port: 3000
+      targetPort: 3000
