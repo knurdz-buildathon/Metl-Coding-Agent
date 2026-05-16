@@ -19,8 +19,8 @@ RUN pip install playwright && \
 # Copy source first for pip install
 COPY . .
 
-# Install main dependencies + test tools
-RUN pip install --no-cache-dir ".[test]"
+# Install main dependencies + dev tools
+RUN pip install --no-cache-dir ".[devtools]"
 
 # Optional: install v0-sdk if flag is set
 ARG INSTALL_V0=false
