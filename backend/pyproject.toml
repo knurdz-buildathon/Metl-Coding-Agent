@@ -26,18 +26,8 @@ dependencies = [
     "litellm>=1.60.0",
 ]
 
-[project.optional-dependencies]
-v0 = ["v0-sdk>=0.1.0"]
-devtools = [
-    "pytest>=8.0.0",
-    "pytest-asyncio>=0.25.0",
-    "pytest-cov>=6.0.0",
-    "httpx>=0.28.0",
-    "ruff>=0.9.0",
-    "mypy>=1.15.0",
-]
-# cursor-sdk is installed separately when ENABLE_CURSOR_SDK=true
-# It's not on PyPI -- install via: pip install @cursor/sdk (npm) or manual
+# Optional dependencies are installed explicitly in Dockerfile
+# v0-sdk and test tools are not in main dependencies to avoid build issues
 
 [build-system]
 requires = ["hatchling"]

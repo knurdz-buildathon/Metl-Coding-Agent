@@ -1,14 +1,27 @@
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request, BackgroundTasks
 from app.models import TaskCreate
 from app.services.task_store import TaskStore
+from app.services.agent_runner import start_agent
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
 
 @router.post("")
-async def create_task(task_data: TaskCreate, request: Request):
+async def create_task(
+    task_data: TaskCreate, 
+    background_tasks: BackgroundTasks,
+    request: Request
+):
     store: TaskStore = request.app.state.task_store
+    event_bus = request.app.state.event_bus
+    
     task = await store.create(task_data.model_dump())
+    
+    # Start the agent in the background
+    background_tasks.add_task(
+        start_agent, task.id, store, event_bus
+    )
+    
     return {"task_id": task.id, "status": task.status.value}
 
 

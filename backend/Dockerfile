@@ -19,8 +19,17 @@ RUN pip install playwright && \
 # Copy source first for pip install
 COPY . .
 
-# Install main dependencies + dev tools
-RUN pip install --no-cache-dir ".[devtools]"
+# Install core dependencies + test tools
+RUN pip install --no-cache-dir -e .
+
+# Install test and dev tools directly
+RUN pip install --no-cache-dir \
+    pytest>=8.0.0 \
+    pytest-asyncio>=0.25.0 \
+    pytest-cov>=6.0.0 \
+    httpx>=0.28.0 \
+    ruff>=0.9.0 \
+    mypy>=1.15.0
 
 # Optional: install v0-sdk if flag is set
 ARG INSTALL_V0=false
