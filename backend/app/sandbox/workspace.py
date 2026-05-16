@@ -22,9 +22,13 @@ class Workspace:
     async def clone(self) -> Path:
         """Clone the repo and create a feature branch."""
         import json, time, traceback  # #region agent log
-        _dl_path = "/Users/rk_vishva/Documents/Projects/Metl/.cursor/debug-a493e7.log"
+        _dl_path = "/tmp/metl-debug-a493e7.log"
         def _dl(msg, data, hid="H2"):
-            with open(_dl_path,"a") as f: f.write(json.dumps({"sessionId":"a493e7","id":"log_"+str(int(time.time()*1000)),"timestamp":int(time.time()*1000),"location":"workspace.py:24","message":msg,"data":data,"runId":"debug","hypothesisId":hid})+"\n")
+            _dl_obj = json.dumps({"sessionId":"a493e7","id":"log_"+str(int(time.time()*1000)),"timestamp":int(time.time()*1000),"location":"workspace.py:24","message":msg,"data":data,"runId":"debug","hypothesisId":hid})
+            print("[METL_DEBUG] " + _dl_obj)
+            try:
+                with open(_dl_path,"a") as f: f.write(_dl_obj+"\n")
+            except Exception: pass
         _dl("H2: clone() start", {"work_dir":str(self.work_dir),"github_url":self.github_url,"branch":self.branch}, "H2")
         self.work_dir.mkdir(parents=True, exist_ok=True)
         _dl("H2: work_dir ensured", {"exists":self.work_dir.exists()}, "H2")

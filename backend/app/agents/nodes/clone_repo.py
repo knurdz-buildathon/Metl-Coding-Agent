@@ -9,9 +9,13 @@ from app.sandbox.workspace import Workspace
 async def clone_repo_node(state: AgentState) -> dict:
     """Clone the repository and set up the feature branch."""
     import json, time, traceback  # #region agent log
-    _dl_path = "/Users/rk_vishva/Documents/Projects/Metl/.cursor/debug-a493e7.log"
+    _dl_path = "/tmp/metl-debug-a493e7.log"
     def _dl(msg, data, hid="H2"):
-        with open(_dl_path,"a") as f: f.write(json.dumps({"sessionId":"a493e7","id":"log_"+str(int(time.time()*1000)),"timestamp":int(time.time()*1000),"location":"clone_repo.py:12","message":msg,"data":data,"runId":"debug","hypothesisId":hid})+"\n")
+        _dl_obj = json.dumps({"sessionId":"a493e7","id":"log_"+str(int(time.time()*1000)),"timestamp":int(time.time()*1000),"location":"clone_repo.py:12","message":msg,"data":data,"runId":"debug","hypothesisId":hid})
+        print("[METL_DEBUG] " + _dl_obj)
+        try:
+            with open(_dl_path,"a") as f: f.write(_dl_obj+"\n")
+        except Exception: pass
     task = get_task(state)
     _dl("H2: clone_repo entry", {"task_id":task.id,"github_url":task.github_url,"branch":task.branch}, "H2")
     workspace = Workspace(

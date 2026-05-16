@@ -58,9 +58,13 @@ class AiderTool:
             cmd.append(str(self.workspace_path))
 
         import json, time, traceback  # #region agent log
-        _dl_path = "/Users/rk_vishva/Documents/Projects/Metl/.cursor/debug-a493e7.log"
+        _dl_path = "/tmp/metl-debug-a493e7.log"
         def _dl(msg, data, hid="H3"):
-            with open(_dl_path,"a") as f: f.write(json.dumps({"sessionId":"a493e7","id":"log_"+str(int(time.time()*1000)),"timestamp":int(time.time()*1000),"location":"aider_tool.py:62","message":msg,"data":data,"runId":"debug","hypothesisId":hid})+"\n")
+            _dl_obj = json.dumps({"sessionId":"a493e7","id":"log_"+str(int(time.time()*1000)),"timestamp":int(time.time()*1000),"location":"aider_tool.py:62","message":msg,"data":data,"runId":"debug","hypothesisId":hid})
+            print("[METL_DEBUG] " + _dl_obj)
+            try:
+                with open(_dl_path,"a") as f: f.write(_dl_obj+"\n")
+            except Exception: pass
         _dl("H3: aider run start", {"cmd":" ".join(cmd[:8]),"cwd":str(self.workspace_path),"exists":self.workspace_path.exists()}, "H3")
         try:
             result = subprocess.run(
