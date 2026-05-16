@@ -18,6 +18,7 @@ class Workspace:
         self.branch_name = f"metl/task-{task_id}"
         self.work_dir: Path = Path(settings.sandbox_base_dir) / task_id
         self.repo: Repo | None = None
+        self._base_commit: str = ""
 
     async def clone(self) -> Path:
         """Clone the repo and create a feature branch."""
@@ -58,8 +59,10 @@ class Workspace:
                 raise
 
         try:
+            # Record the base commit for reliable diff later (origin/main may not exist after re-open)
+            self._base_commit = self.repo.head.commit.hexsha
             await loop.run_in_executor(None, self.repo.git.checkout, "-b", self.branch_name)
-            _dl("H2: created feature branch", {"branch_name":self.branch_name}, "H2")
+            _dl("H2: created feature branch", {"branch_name":self.branch_name,"base_commit":self._base_commit}, "H2")
         except Exception as e:
             _dl("H2: feature branch creation failed", {"error":str(e)}, "H2")
             raise
@@ -111,8 +114,19 @@ class Workspace:
         """Get a summary of changes since the base branch."""
         if not self.repo:
             return ""
-        diff = self.repo.git.diff(f"origin/{self.branch}...HEAD", stat=True)
-        return diff
+        try:
+            diff = self.repo.git.diff(f"origin/{self.branch}...HEAD", stat=True)
+            return diff
+        except GitCommandError:
+            # Fallback: compare against the recorded base commit, or just show unstaged changes
+            if self._base_commit:
+                try:
+                    diff = self.repo.git.diff(f"{self._base_commit}...HEAD", stat=True)
+                    return diff
+                except GitCommandError:
+                    pass
+            # Final fallback: show current working tree changes vs HEAD
+            return self.repo.git.diff("--stat")
 
     async def cleanup(self):
         """Remove the workspace directory."""

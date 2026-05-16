@@ -19,6 +19,11 @@ async def generate_report_node(state: AgentState) -> dict:
     )
     workspace.work_dir = Path(state["workspace_path"])
     workspace.repo = Repo(str(workspace.work_dir))
+    # Record base commit for diff fallback
+    try:
+        workspace._base_commit = workspace.repo.head.commit.hexsha
+    except Exception:
+        workspace._base_commit = ""
 
     # Commit remaining changes
     await workspace.commit(f"[Metl] Complete: {task.prompt[:80]}")
