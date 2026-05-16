@@ -95,10 +95,17 @@ class Workspace:
     def _authenticated_url(self) -> str:
         """Convert HTTPS URL to authenticated URL using PAT."""
         pat = settings.github_pat
-        if "://" in self.github_url:
-            parts = self.github_url.split("://", 1)
-            return f"{parts[0]}://{pat}@{parts[1]}"
-        return self.github_url
+        if not pat:
+            raise ValueError("GITHUB_PAT is required for authenticated clone")
+        if "github.com" not in self.github_url:
+            return self.github_url
+
+        # Format: https://<PAT>@github.com/owner/repo.git
+        # Fine-grained PAT works with plain token@host
+        url = self.github_url.rstrip("/")
+        if url.endswith(".git"):
+            url = url[:-4]
+        return f"https://{pat}@{url.split('://', 1)[1]}.git"
 
     def _parse_github_url(self) -> tuple[str, str]:
         """Extract owner and repo name from GitHub URL."""
