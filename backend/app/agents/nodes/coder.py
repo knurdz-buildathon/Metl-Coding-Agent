@@ -1,4 +1,5 @@
-import json
+import asyncio
+import os
 from pathlib import Path
 
 from app.agents.state import AgentState, get_task, task_update
@@ -9,7 +10,6 @@ from app.agents.prompts import CODER_SYSTEM_PROMPT
 
 
 async def execute_coding_step(state: AgentState) -> dict:
-    """Execute the current step in the plan using Aider."""
     task = get_task(state)
     workspace = Path(state["workspace_path"])
     aidertool = AiderTool(workspace)
@@ -22,8 +22,7 @@ async def execute_coding_step(state: AgentState) -> dict:
         return {"errors": ["No more steps to execute"]}
 
     step_description = steps[current_step]
-    
-    # Read existing project files for context
+
     pkg_json = fstool.read_file("package.json")
     readme = fstool.read_file("README.md")
     existing_files = fstool.list_files()
@@ -50,15 +49,41 @@ Implementation Step {current_step + 1}/{len(steps)}:
 IMPORTANT: Make the necessary code changes to implement this step. 
 Ensure the changes are complete and consistent with existing code."""
 
+    loop = asyncio.get_running_loop()
+
+    # Capture pre-state: git diff baseline
+    pre_diff = await _capture_git_diff(workspace, loop)
+    pre_files = set(existing_files)
+
     result = await aidertool.run(prompt)
+
+    # Capture post-state
+    post_files = set(fstool.list_files())
+    post_diff = await _capture_git_diff(workspace, loop)
+
+    new_files = list(post_files - pre_files)
+    changed_files = list(post_files & pre_files)
+
+    # Use git to find modified files more reliably
+    modified_files = result.get("files_changed", []) or new_files
+    all_changed = list(set(modified_files + new_files))
 
     step_result = {
         "step_num": current_step + 1,
         "description": step_description,
         "success": result["success"],
         "output": result["output"][:2000],
-        "files_changed": result["files_changed"],
+        "files_changed": all_changed,
+        "new_files": new_files,
+        "diff": post_diff[:5000] if post_diff else "",
     }
+
+    # Emit events for each changed file
+    for fpath in all_changed:
+        try:
+            file_diff = await _capture_git_diff(workspace, loop, fpath)
+        except Exception:
+            file_diff = ""
 
     return {
         "current_step": current_step + 1,
@@ -72,7 +97,6 @@ Ensure the changes are complete and consistent with existing code."""
 
 
 async def apply_fix(state: AgentState, fix_description: str, files: list[str] = None) -> dict:
-    """Apply a specific fix (usually called after browser inspection finds issues)."""
     workspace = Path(state["workspace_path"])
     aidertool = AiderTool(workspace)
 
@@ -95,3 +119,20 @@ Apply the fix carefully, ensuring it doesn't break existing functionality."""
             "output": result["output"][:1000],
         }],
     }
+
+
+async def _capture_git_diff(workspace: Path, loop, file_path: str = "") -> str:
+    try:
+        if file_path:
+            raw = await loop.run_in_executor(
+                None,
+                lambda: os.popen(f"cd {workspace} && git diff -- {file_path} 2>/dev/null").read(),
+            )
+        else:
+            raw = await loop.run_in_executor(
+                None,
+                lambda: os.popen(f"cd {workspace} && git diff 2>/dev/null").read(),
+            )
+        return raw
+    except Exception:
+        return ""

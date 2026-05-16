@@ -25,39 +25,60 @@ export default function Home() {
 
   useEffect(() => {
     fetchTasks();
+
+    const interval = setInterval(fetchTasks, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   return (
-    <div className="min-h-screen p-8">
-      <header className="mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Metl</h1>
-            <p className="text-gray-500 mt-1">Autonomous Coding Agent</p>
+    <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]">
+      <header className="border-b border-[var(--border-primary)] bg-[var(--bg-secondary)]">
+        <div className="max-w-5xl mx-auto flex items-center justify-between px-6 py-3">
+          <div className="flex items-center gap-3">
+            <span className="text-[var(--accent-blue)] font-bold text-lg">Metl</span>
+            <span className="text-xs text-[var(--text-secondary)] bg-[var(--bg-tertiary)] px-2 py-0.5 rounded border border-[var(--border-primary)]">
+              IDE
+            </span>
           </div>
           <button
             onClick={() => setShowCreate(!showCreate)}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+            className="px-4 py-1.5 text-sm rounded bg-[var(--accent-blue)] text-white hover:opacity-90 transition-opacity"
           >
             {showCreate ? "Cancel" : "New Task"}
           </button>
         </div>
       </header>
 
-      {showCreate && (
-        <div className="mb-8">
-          <CreateTaskForm onCreated={() => { setShowCreate(false); fetchTasks(); }} />
-        </div>
-      )}
-
-      <main>
-        <h2 className="text-xl font-semibold mb-4">Tasks</h2>
-        {loading ? (
-          <div className="text-center py-12 text-gray-400">Loading tasks...</div>
-        ) : (
-          <TaskList tasks={tasks} />
+      <div className="max-w-5xl mx-auto p-6">
+        {showCreate && (
+          <div className="mb-8">
+            <CreateTaskForm
+              onCreated={() => {
+                setShowCreate(false);
+                fetchTasks();
+              }}
+            />
+          </div>
         )}
-      </main>
+
+        <main>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-semibold text-[var(--text-secondary)] uppercase tracking-wider">
+              Tasks
+            </h2>
+            <span className="text-xs text-[var(--text-secondary)]">
+              {loading ? "Loading..." : `${tasks.length} tasks`}
+            </span>
+          </div>
+          {loading ? (
+            <div className="text-center py-12 text-[var(--text-secondary)]">
+              <div className="inline-block w-5 h-5 border-2 border-[var(--border-primary)] border-t-[var(--accent-blue)] rounded-full animate-spin" />
+            </div>
+          ) : (
+            <TaskList tasks={tasks} />
+          )}
+        </main>
+      </div>
     </div>
   );
 }

@@ -21,9 +21,9 @@ spec:
             - containerPort: 3000
           env:
             - name: NEXT_PUBLIC_API_URL
-              value: "https://metl.yourdomain.com/api/v1"
+              value: "https://agent.metl.run/api/v1"
             - name: NEXT_PUBLIC_WS_URL
-              value: "wss://metl.yourdomain.com/ws"
+              value: "wss://agent.metl.run/ws"
           resources:
             requests:
               cpu: "100m"

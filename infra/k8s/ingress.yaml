@@ -8,7 +8,7 @@ metadata:
     cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
   rules:
-    - host: metl.yourdomain.com
+    - host: agent.metl.run
       http:
         paths:
           - path: /api
@@ -34,5 +34,5 @@ spec:
                   number: 3000
   tls:
     - hosts:
-        - metl.yourdomain.com
+        - agent.metl.run
       secretName: metl-tls

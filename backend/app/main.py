@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routes import tasks, resources
+from app.api.routes import tasks, resources, workspace
 from app.api.websocket import router as ws_router
 from app.config import settings
 from app.services.task_store import TaskStore
@@ -48,6 +48,7 @@ app.add_middleware(
 
 app.include_router(tasks.router, prefix="/api/v1")
 app.include_router(resources.router, prefix="/api/v1")
+app.include_router(workspace.router, prefix="/api/v1")
 app.include_router(ws_router)
 
 
