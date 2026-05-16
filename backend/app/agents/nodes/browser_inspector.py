@@ -10,11 +10,24 @@ async def inspect_preview_node(state: AgentState) -> dict:
     workspace = Path(state["workspace_path"])
     task = get_task(state)
 
+    # Skip preview for non-Node.js repos (no package.json)
+    if not (workspace / "package.json").exists():
+        return {
+            "preview_url": None,
+            "step_results": state["step_results"] + [{
+                "type": "inspection",
+                "issues": [],
+                "passed": True,
+                "summary": "No package.json found; skipping browser preview for non-Node project.",
+            }],
+            "task": task_update(state, status=TaskStatus.CODING),
+        }
+
     # Start preview server
     preview = PreviewTool(workspace, port=4000)
     try:
         url = await preview.start(framework="nextjs")
-    except FileNotFoundError as e:
+    except (FileNotFoundError, RuntimeError) as e:
         return {
             "preview_url": None,
             "step_results": state["step_results"] + [{

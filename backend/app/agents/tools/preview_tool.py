@@ -54,16 +54,33 @@ class PreviewTool:
 
         # Wait for server to be ready
         await asyncio.sleep(5)
+
+        # Detect if the process exited early (e.g., no package.json, missing deps)
+        if self._process.returncode is not None:
+            stdout = (await self._process.stdout.read()).decode() if self._process.stdout else ""
+            stderr = (await self._process.stderr.read()).decode() if self._process.stderr else ""
+            raise RuntimeError(
+                f"Preview server exited early with code {self._process.returncode}. "
+                f"stdout: {stdout[:500]} stderr: {stderr[:500]}"
+            )
+
         return self._url
 
     async def stop(self):
-        if self._process:
+        if not self._process:
+            return
+        try:
             self._process.terminate()
             try:
                 await asyncio.wait_for(self._process.wait(), timeout=10)
             except asyncio.TimeoutError:
-                self._process.kill()
-            self._process = None
+                try:
+                    self._process.kill()
+                except ProcessLookupError:
+                    pass
+        except ProcessLookupError:
+            pass
+        self._process = None
 
     @property
     def url(self) -> Optional[str]:
