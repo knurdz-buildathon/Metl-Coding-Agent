@@ -36,6 +36,8 @@ class LiteLLMService(LLMService):
     def _get_acompletion_kwargs(self) -> dict:
         """Build kwargs for litellm.acompletion, including optional Azure/base overrides."""
         kwargs: dict[str, Any] = {}
+        if settings.openai_api_key:
+            kwargs["api_key"] = settings.openai_api_key
         if settings.openai_api_base:
             kwargs["api_base"] = settings.openai_api_base
         if settings.openai_api_version:
