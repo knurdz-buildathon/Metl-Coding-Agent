@@ -57,6 +57,11 @@ class AiderTool:
         else:
             cmd.append(str(self.workspace_path))
 
+        import json, time, traceback  # #region agent log
+        _dl_path = "/Users/rk_vishva/Documents/Projects/Metl/.cursor/debug-a493e7.log"
+        def _dl(msg, data, hid="H3"):
+            with open(_dl_path,"a") as f: f.write(json.dumps({"sessionId":"a493e7","id":"log_"+str(int(time.time()*1000)),"timestamp":int(time.time()*1000),"location":"aider_tool.py:62","message":msg,"data":data,"runId":"debug","hypothesisId":hid})+"\n")
+        _dl("H3: aider run start", {"cmd":" ".join(cmd[:8]),"cwd":str(self.workspace_path),"exists":self.workspace_path.exists()}, "H3")
         try:
             result = subprocess.run(
                 cmd,
@@ -69,6 +74,7 @@ class AiderTool:
 
             output = result.stdout + result.stderr
             success = result.returncode == 0
+            _dl("H3: aider subprocess finished", {"returncode":result.returncode,"output_len":len(output)}, "H3")
 
             # Parse changed files from aider output
             files_changed = self._parse_changed_files(output)
