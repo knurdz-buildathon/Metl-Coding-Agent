@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 from typing import Optional, Any
 from enum import Enum
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 class TaskStatus(str, Enum):
@@ -70,6 +70,6 @@ class Task(BaseModel):
     log: list[dict[str, Any]] = Field(default_factory=list)
     errors: list[str] = Field(default_factory=list)
     report: Optional[dict[str, Any]] = None
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     metadata: dict[str, Any] = Field(default_factory=dict)

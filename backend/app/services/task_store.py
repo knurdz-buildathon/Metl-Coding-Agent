@@ -49,6 +49,8 @@ class TaskStore:
             return None
         for key, value in kwargs.items():
             if hasattr(task, key):
+                if key == "status" and isinstance(value, str):
+                    value = TaskStatus(value)
                 setattr(task, key, value)
         task.updated_at = datetime.now(timezone.utc)
         return task
