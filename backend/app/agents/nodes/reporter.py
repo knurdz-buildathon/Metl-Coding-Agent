@@ -1,4 +1,4 @@
-from app.agents.state import AgentState
+from app.agents.state import AgentState, get_task
 from app.models import TaskStatus
 from app.services.llm_service import get_llm_service
 from app.sandbox.workspace import Workspace
@@ -10,7 +10,7 @@ import json
 async def generate_report_node(state: AgentState) -> dict:
     """Generate the completion report, push changes, and create a PR."""
     llm = get_llm_service()
-    task = state["task"]
+    task = get_task(state)
     workspace = Workspace(
         task_id=task.id,
         github_url=task.github_url,

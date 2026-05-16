@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from app.agents.state import AgentState
+from app.agents.state import AgentState, get_task
 from app.models import TaskStatus
 from app.agents.tools.aider_tool import AiderTool
 from app.agents.tools.fs_tool import FsTool
@@ -10,7 +10,7 @@ from app.agents.prompts import CODER_SYSTEM_PROMPT
 
 async def execute_coding_step(state: AgentState) -> dict:
     """Execute the current step in the plan using Aider."""
-    task = state["task"]
+    task = get_task(state)
     workspace = Path(state["workspace_path"])
     aidertool = AiderTool(workspace)
     fstool = FsTool(workspace)

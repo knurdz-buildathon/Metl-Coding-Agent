@@ -1,11 +1,11 @@
-from app.agents.state import AgentState
+from app.agents.state import AgentState, get_task
 from app.models import Resource, TaskStatus
 from app.services.resource_catalog import ResourceCatalog
 
 
 async def request_resources_node(state: AgentState) -> dict:
     """Identify and request resources the project needs from control panel."""
-    task = state["task"]
+    task = get_task(state)
     catalog = ResourceCatalog()
     
     resources_needed = []

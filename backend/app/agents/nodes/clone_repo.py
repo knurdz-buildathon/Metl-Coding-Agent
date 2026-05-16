@@ -1,14 +1,14 @@
 import os
 from pathlib import Path
 
-from app.agents.state import AgentState
+from app.agents.state import AgentState, get_task
 from app.models import TaskStatus
 from app.sandbox.workspace import Workspace
 
 
 async def clone_repo_node(state: AgentState) -> dict:
     """Clone the repository and set up the feature branch."""
-    task = state["task"]
+    task = get_task(state)
     workspace = Workspace(
         task_id=task.id,
         github_url=task.github_url,

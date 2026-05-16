@@ -1,5 +1,5 @@
 import json
-from app.agents.state import AgentState
+from app.agents.state import AgentState, get_task
 from app.models import Plan, TaskStatus
 from app.services.llm_service import get_llm_service
 from app.agents.prompts import PLANNER_SYSTEM_PROMPT
@@ -8,7 +8,7 @@ from app.agents.prompts import PLANNER_SYSTEM_PROMPT
 async def analyze_plan_node(state: AgentState) -> dict:
     """Analyze the prompt + plan_file and create an enhanced implementation plan."""
     llm = get_llm_service()
-    task = state["task"]
+    task = get_task(state)
 
     # Build context for LLM
     repo_context = ""

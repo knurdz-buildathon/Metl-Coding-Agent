@@ -3,7 +3,7 @@ from typing import Literal
 from langgraph.graph import StateGraph, END
 from langgraph.checkpoint.memory import MemorySaver
 
-from app.agents.state import AgentState
+from app.agents.state import AgentState, get_task
 from app.agents.nodes import (
     analyze_plan_node,
     clone_repo_node,
@@ -18,7 +18,7 @@ from app.agents.nodes.browser_inspector import has_issues_decision
 
 def should_continue(state: AgentState) -> Literal["continue", "inspect", "resources", "report"]:
     """Determine the next step in the agent loop."""
-    task = state["task"]
+    task = get_task(state)
     current_step = state["current_step"]
     total_steps = len(task.plan.steps)
 

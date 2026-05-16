@@ -1,4 +1,4 @@
-from app.agents.state import AgentState
+from app.agents.state import AgentState, get_task
 from app.models import TaskStatus
 from app.agents.tools.browser_tool import BrowserTool
 from app.agents.tools.preview_tool import PreviewTool
@@ -8,7 +8,7 @@ from pathlib import Path
 async def inspect_preview_node(state: AgentState) -> dict:
     """Start a preview server and inspect with browser-use."""
     workspace = Path(state["workspace_path"])
-    task = state["task"]
+    task = get_task(state)
     
     # Start preview server
     preview = PreviewTool(workspace, port=4000)
