@@ -1,4 +1,4 @@
-from app.agents.state import AgentState, get_task
+from app.agents.state import AgentState, get_task, task_update
 from app.models import Resource, TaskStatus
 from app.services.resource_catalog import ResourceCatalog
 
@@ -26,7 +26,7 @@ async def request_resources_node(state: AgentState) -> dict:
 
     return {
         "resources_requested": resources_needed,
-        "task": {"status": TaskStatus.WAITING_FOR_RESOURCE},
+        "task": task_update(state, status=TaskStatus.WAITING_FOR_RESOURCE),
     }
 
 
@@ -57,5 +57,5 @@ async def apply_resources_node(state: AgentState) -> dict:
                 f.write(f"{var}\n")
 
     return {
-        "task": {"status": TaskStatus.CODING},
+        "task": task_update(state, status=TaskStatus.CODING),
     }

@@ -1,4 +1,4 @@
-from app.agents.state import AgentState, get_task
+from app.agents.state import AgentState, get_task, task_update
 from app.models import TaskStatus
 from app.services.llm_service import get_llm_service
 from app.sandbox.workspace import Workspace
@@ -106,5 +106,5 @@ Git Diff Summary:
     return {
         "report": report,
         "pr_url": pr_url,
-        "task": {"status": TaskStatus.COMPLETED, "report": report},
+        "task": task_update(state, status=TaskStatus.COMPLETED, report=report),
     }

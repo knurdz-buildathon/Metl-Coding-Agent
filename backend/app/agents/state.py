@@ -23,3 +23,10 @@ def get_task(state: AgentState) -> Task:
     if isinstance(task, Task):
         return task
     return Task(**task)
+
+
+def task_update(state: AgentState, **overrides) -> dict:
+    """Return a full task dict with overrides applied, suitable for LangGraph state updates."""
+    data = get_task(state).model_dump()
+    data.update(overrides)
+    return data

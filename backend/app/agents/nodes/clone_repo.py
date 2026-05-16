@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-from app.agents.state import AgentState, get_task
+from app.agents.state import AgentState, get_task, task_update, task_update
 from app.models import TaskStatus
 from app.sandbox.workspace import Workspace
 
@@ -18,5 +18,5 @@ async def clone_repo_node(state: AgentState) -> dict:
     work_dir = await workspace.clone()
     return {
         "workspace_path": str(work_dir),
-        "task": {"status": TaskStatus.CLONING},
+        "task": task_update(state, status=TaskStatus.CLONING),
     }

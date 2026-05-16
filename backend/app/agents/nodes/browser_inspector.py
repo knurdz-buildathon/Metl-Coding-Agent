@@ -1,4 +1,4 @@
-from app.agents.state import AgentState, get_task
+from app.agents.state import AgentState, get_task, task_update
 from app.models import TaskStatus
 from app.agents.tools.browser_tool import BrowserTool
 from app.agents.tools.preview_tool import PreviewTool
@@ -31,9 +31,10 @@ async def inspect_preview_node(state: AgentState) -> dict:
             "passed": result.get("passed", True),
             "summary": result.get("summary", ""),
         }],
-        "task": {
-            "status": TaskStatus.INSPECTING if has_issues else TaskStatus.CODING,
-        },
+        "task": task_update(
+            state,
+            status=TaskStatus.INSPECTING if has_issues else TaskStatus.CODING,
+        ),
     }
 
 

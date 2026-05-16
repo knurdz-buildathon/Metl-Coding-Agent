@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from app.agents.state import AgentState, get_task
+from app.agents.state import AgentState, get_task, task_update
 from app.models import TaskStatus
 from app.agents.tools.aider_tool import AiderTool
 from app.agents.tools.fs_tool import FsTool
@@ -63,10 +63,11 @@ Ensure the changes are complete and consistent with existing code."""
     return {
         "current_step": current_step + 1,
         "step_results": state["step_results"] + [step_result],
-        "task": {
-            "status": TaskStatus.CODING,
-            "current_step": current_step + 1,
-        },
+        "task": task_update(
+            state,
+            status=TaskStatus.CODING,
+            current_step=current_step + 1,
+        ),
     }
 
 

@@ -1,5 +1,5 @@
 import json
-from app.agents.state import AgentState, get_task
+from app.agents.state import AgentState, get_task, task_update
 from app.models import Plan, TaskStatus
 from app.services.llm_service import get_llm_service
 from app.agents.prompts import PLANNER_SYSTEM_PROMPT
@@ -59,9 +59,10 @@ Output your analysis and plan as a JSON object with fields:
         "step_results": [],
         "errors": [],
         "resources_requested": resources_needed,
-        "task": {
-            "plan": enhanced_plan,
-            "status": TaskStatus.PLANNING,
-            "total_steps": len(steps),
-        }
+        "task": task_update(
+            state,
+            plan=enhanced_plan,
+            status=TaskStatus.PLANNING,
+            total_steps=len(steps),
+        ),
     }
