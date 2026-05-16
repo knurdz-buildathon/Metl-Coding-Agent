@@ -2,14 +2,20 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-# Install system dependencies for Playwright, Aider, etc.
+# Install system dependencies for Playwright, Aider, Git, and Node.js
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     curl \
     build-essential \
     libffi-dev \
     libssl-dev \
+    gnupg \
     && rm -rf /var/lib/apt/lists/*
+
+# Install Node.js LTS (required by Next.js/Vite preview servers)
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
+    apt-get install -y nodejs && \
+    rm -rf /var/lib/apt/lists/*
 
 # Install Playwright browsers for browser-use
 RUN pip install playwright && \

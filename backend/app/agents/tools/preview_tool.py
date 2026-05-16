@@ -34,6 +34,17 @@ class PreviewTool:
         else:
             cmd = ["npx", "next", "dev", "--port", str(self.port)]
 
+        # Guard: ensure the command binary is available before spawning
+        for binary in cmd:
+            if not binary.startswith("-"):
+                import shutil
+                if shutil.which(binary) is None:
+                    raise FileNotFoundError(
+                        f"Required preview binary '{binary}' not found in PATH. "
+                        "Install Node.js in the container to enable preview inspection."
+                    )
+                break
+
         self._process = await asyncio.create_subprocess_exec(
             *cmd,
             cwd=str(self.workspace),

@@ -9,20 +9,32 @@ async def inspect_preview_node(state: AgentState) -> dict:
     """Start a preview server and inspect with browser-use."""
     workspace = Path(state["workspace_path"])
     task = get_task(state)
-    
+
     # Start preview server
     preview = PreviewTool(workspace, port=4000)
-    url = await preview.start(framework="nextjs")
-    
+    try:
+        url = await preview.start(framework="nextjs")
+    except FileNotFoundError as e:
+        return {
+            "preview_url": None,
+            "step_results": state["step_results"] + [{
+                "type": "inspection",
+                "issues": [{"severity": "major", "description": str(e)}],
+                "passed": False,
+                "summary": f"Preview server unavailable: {e}",
+            }],
+            "task": task_update(state, status=TaskStatus.CODING),
+        }
+
     # Inspect with browser-use
     inspector = BrowserTool()
     result = await inspector.inspect(url, task.prompt)
-    
+
     await preview.stop()
-    
+
     issues = result.get("issues", [])
     has_issues = any(i.get("severity") in ("critical", "major") for i in issues)
-    
+
     return {
         "preview_url": url,
         "step_results": state["step_results"] + [{
