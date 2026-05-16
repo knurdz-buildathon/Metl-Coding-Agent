@@ -24,11 +24,9 @@ class CursorTool:
     async def initialize(self):
         if not self.enabled:
             return
-        try:
-            from cursor import Agent
-            self._client = Agent
-        except ImportError:
-            self.enabled = False
+        # Cursor SDK is a TypeScript package installed via npm
+        # When enabled, it's invoked via subprocess: npx @cursor/sdk
+        # No Python import needed
 
     async def run_task(self, prompt: str, workspace_path: str) -> dict:
         """

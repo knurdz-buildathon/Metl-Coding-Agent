@@ -16,17 +16,18 @@ RUN pip install playwright && \
     playwright install chromium && \
     playwright install-deps chromium
 
-COPY pyproject.toml .
-RUN pip install --no-cache-dir -e ".[dev]"
+# Copy source first for pip install
+COPY . .
 
-# Install optional deps based on env flags
+# Install main dependencies (not optional extras)
+RUN pip install --no-cache-dir .
+
+# Install dev dependencies for testing
+RUN pip install --no-cache-dir pytest pytest-asyncio pytest-cov httpx
+
+# Optional: install v0-sdk if flag is set
 ARG INSTALL_V0=false
 RUN if [ "$INSTALL_V0" = "true" ]; then pip install v0-sdk; fi
-
-ARG INSTALL_CURSOR=false
-RUN if [ "$INSTALL_CURSOR" = "true" ]; then pip install cursor-sdk; fi
-
-COPY . .
 
 EXPOSE 8000
 
