@@ -4,6 +4,7 @@ from app.services.llm_service import get_llm_service
 from app.sandbox.workspace import Workspace
 from app.agents.prompts import REPORTER_SYSTEM_PROMPT
 from pathlib import Path
+from git import Repo
 import json
 
 
@@ -17,6 +18,7 @@ async def generate_report_node(state: AgentState) -> dict:
         branch=task.branch,
     )
     workspace.work_dir = Path(state["workspace_path"])
+    workspace.repo = Repo(str(workspace.work_dir))
 
     # Commit remaining changes
     await workspace.commit(f"[Metl] Complete: {task.prompt[:80]}")
